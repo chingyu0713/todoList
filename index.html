@@ -112,12 +112,13 @@
       <template x-if="showSection == 'taskSection'">
         <section id="taskSection">
           <form id="todoForm">
-            <input type="text" id="taskInput" autocomplete="off" spellcheck="false" placeholder="做點重要的事吧..." />
-            <button id="addTodoBtn">新增</button>
+            <input x-model="task" type="text" id="taskInput" autocomplete="off" spellcheck="false" placeholder="做點重要的事吧..." />
+            <button id="addTodoBtn" @click.prevent="addTodo" class="cursor-pointer">新增</button>
           </form>
         </section>
       </template>
       <!-- TODO Section end -->
+      
       <section class="todo-list">
         <ul class="items">
           <!-- item start -->
@@ -125,13 +126,14 @@
           <li class="completed">
             <div class="item-content">
               <label>
-                <input type="checkbox" checked />
-                <p class="content">我要發大財</p>
+                <input type="checkbox"  />
+                <p class="content" x-text="todo.content"></p>
               </label>
             </div>
+            
             <div class="item-control">
               <a href="#" class="edit"><img class="icon" src="src/assets/pen-to-square-solid.svg" /></a>
-              <a href="#" class="delete"><img class="icon" src="src/assets/trash-can-solid.svg" /></a>
+              <a @click.prevent="deleteTodo(todo.id)" href="#" class="delete"><img class="icon" src="src/assets/trash-can-solid.svg" /></a>
             </div>
           </li>
         </template>

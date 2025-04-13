@@ -10,6 +10,8 @@ const Main = () => ({
   password: "",
   isLogin: false,
   todos: [],
+  task: "",
+
   init() {
     const token = localStorage.getItem(TOKEN_NAME)
     if (token) {
@@ -32,41 +34,80 @@ const Main = () => ({
   showTaskInput() {
     this.showSection = "taskSection"
   },
+
+  async deleteTodo(id) {
+    const token = localStorage.getItem(TOKEN_NAME)
+    if (token){
+        const url = `https://todoo.5xcamp.us/todos/${id}`
+        const config = { headers: { Authorization: token } }
+        this.$el.parentNode.parentNode.remove()
+        try {
+            await axios.delete(url, config)
+        } catch {
+            Swal.fire({
+                title: "錯誤",
+                text: "無法刪除資料，請稍後再試",
+                icon: "error",
+                confirmButtonText: "確認",
+            })
+        }
+    }
+  },
+  async addTodo() {
+    const token = localStorage.getItem(TOKEN_NAME)
+    if (token && this.task != "") {
+      const url = "https://todoo.5xcamp.us/todos"
+      const todoData = {
+        todo: {
+          content: this.task,
+        },
+      }
+      const config = { headers: { Authorization: token } }
+      try {
+        const { data } = await axios.post(url, todoData, config)
+        this.task = ""
+        this.todos.unshift(data)
+      } catch (err) {
+        Swal.fire({
+          title: "新增錯誤",
+          text: "請稍後再試",
+          icon: "error",
+          confirmButtonText: "確認",
+        })
+      }
+    }
+  },
   async getTodos() {
     const url = "https://todoo.5xcamp.us/todos"
     const token = localStorage.getItem(TOKEN_NAME)
     if (token) {
-        const config = {headers: {Authorization: token}}
-        try {
-            const {data} = await axios.get(url, config)
-            const {todos} = data
-            this.todos = todos
-            
-        }catch (err) {
-            console.log(err)
-        }
+      const config = { headers: { Authorization: token } }
+      try {
+        const { data } = await axios.get(url, config)
+        const { todos } = data
+        this.todos = todos
+      } catch (err) {
+        console.log(err)
+      }
     }
   },
-
-
 
   async logout() {
     const url = "https://todoo.5xcamp.us/users/sign_out"
     const token = localStorage.getItem(TOKEN_NAME)
     if (token) {
-      axios.defaults.headers.common["Authorization"] = token
-    }
+      axios.defaults.headers.common["Authorization"] = null
     try {
-        const config = {headers: {Authorization: token}}
-        const resp = await axios.delete(url, config)
+      const config = { headers: { Authorization: token } }
+      const resp = await axios.delete(url, config)
     } catch {
-        //處理錯誤可不處理
+      //處理錯誤可不處理
     }
     this.isLogin = false
     localStorage.removeItem(TOKEN_NAME)
-    axios.defaults.headers.common["Authorization"] = null
+    this.todos = []
     this.showLogin()
-
+    }
   },
   async login() {
     if (this.email != "" && this.password != "") {
@@ -76,7 +117,7 @@ const Main = () => ({
           password: this.password,
         },
       }
-    
+
       try {
         const resp = await axios.post("https://todoo.5xcamp.us/users/sign_in", userData)
         const token = resp.headers.authorization
@@ -86,7 +127,12 @@ const Main = () => ({
         this.isLogin = true
         this.showTaskInput()
       } catch (err) {
-        console.log(err)
+        Swal.fire({
+          title: "登入發生錯誤",
+          html: "請檢查帳號或密碼是否正確",
+          icon: "error",
+          confirmButtonText: "確認",
+        })
       }
     }
   },
