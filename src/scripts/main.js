@@ -3,6 +3,14 @@ import Swal from "sweetalert2"
 
 const TOKEN_NAME = "user_token"
 
+function removeTodo(todos, id)  {
+    const idx = todos.findIndex((todo) => todo.id==id)
+    if (idx >= 0) {
+        todos.splice(idx, 1)
+    }  
+}
+
+
 const Main = () => ({
   showSection: "loginSection",
   email: "",
@@ -20,6 +28,7 @@ const Main = () => ({
       this.getTodos()
     }
   },
+  
   clearText() {
     this.email = ""
     this.nickname = ""
@@ -35,12 +44,21 @@ const Main = () => ({
     this.showSection = "taskSection"
   },
 
+  async editTodo(id) {
+    this.$refs.modal.showModal();
+    
+  },
+
+
+
   async deleteTodo(id) {
     const token = localStorage.getItem(TOKEN_NAME)
     if (token){
         const url = `https://todoo.5xcamp.us/todos/${id}`
-        const config = { headers: { Authorization: token } }
-        this.$el.parentNode.parentNode.remove()
+        const config = { 
+            headers: { Authorization: token } 
+        }
+        removeTodo(this.todos, id)
         try {
             await axios.delete(url, config)
         } catch {
@@ -96,13 +114,13 @@ const Main = () => ({
     const url = "https://todoo.5xcamp.us/users/sign_out"
     const token = localStorage.getItem(TOKEN_NAME)
     if (token) {
-      axios.defaults.headers.common["Authorization"] = null
-    try {
-      const config = { headers: { Authorization: token } }
-      const resp = await axios.delete(url, config)
-    } catch {
-      //處理錯誤可不處理
-    }
+        try {
+            const config = { headers: { Authorization: token } }
+            await axios.delete(url, config)
+        } catch {
+            //處理錯誤可不處理
+        }
+    axios.defaults.headers.common["Authorization"] = null
     this.isLogin = false
     localStorage.removeItem(TOKEN_NAME)
     this.todos = []
