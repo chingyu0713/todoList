@@ -1,6 +1,22 @@
 import axios from "axios"
 import Swal from "sweetalert2"
+import { debounce } from 'throttle-debounce';
 
+const toggleTodoFunc = debounce(
+	500,
+	(id) => {
+        const token = localStorage.getItem(TOKEN_NAME);
+        const url = `https://todoo.5xcamp.us/todos/${id}/toggle`
+        const config = { 
+            headers: { Authorization: token } 
+        }
+        try {
+            axios.patch(url, null, config)
+        } catch {
+            console.log("error");
+        }  
+	}	
+)
 const TOKEN_NAME = "user_token"
 
 function removeTodo(todos, id)  {
@@ -19,6 +35,7 @@ const Main = () => ({
   isLogin: false,
   todos: [],
   task: "",
+  todoText: "",
 
   init() {
     const token = localStorage.getItem(TOKEN_NAME)
@@ -44,15 +61,51 @@ const Main = () => ({
     this.showSection = "taskSection"
   },
 
-  async editTodo(id) {
-    this.$refs.modal.showModal();
+  editTodo(id) {
+
+    const todo = this.todos.find((todo) => todo.id == id)
+    if(todo) {
+        this.todoText = todo.content
+        this.$refs.modal.dataset.id = id
+        this.$refs.modal.showModal();
+    }
     
   },
 
+async toggleTodo(id) {
+    toggleTodoFunc(id)
+},
+
+async updateTodo() {
+    const {id} = this.$refs.modal.dataset;
+    const token = localStorage.getItem(TOKEN_NAME);
+    if (token && id) {
+        const url = `https://todoo.5xcamp.us/todos/${id}`
+        const config = { 
+            headers: { Authorization: token } 
+        }
+        const todoData = {
+            todo: {
+              content: this.todoText,
+            },
+          }
+        try{
+            this.$refs.modal.close()
+            const todo = this.todos.find((todo) => todo.id == id)
+            todo.content = this.todoText
+            await axios.put(url, todoData, config)
+        } catch {
+            console.log("更新錯誤");
+            
+        }  
+    }
+    
+},
 
 
   async deleteTodo(id) {
-    const token = localStorage.getItem(TOKEN_NAME)
+    if (confirm("確定要刪除嗎？")) {
+        const token = localStorage.getItem(TOKEN_NAME)
     if (token){
         const url = `https://todoo.5xcamp.us/todos/${id}`
         const config = { 
@@ -70,6 +123,8 @@ const Main = () => ({
             })
         }
     }
+    }
+    
   },
   async addTodo() {
     const token = localStorage.getItem(TOKEN_NAME)

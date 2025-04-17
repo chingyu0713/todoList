@@ -10,7 +10,7 @@
   <script src="src/scripts/todo.js" type="module"></script>
 </head>
 
-<body class="container px-2 py-4 mx-auto">
+<body class="container px-2 py-4 mx-auto"  x-data="Main">
   <header class="banner">
     <h1><a href="#todo" class="taskLink">TODO!</a></h1>
     <div class="subtitle">
@@ -26,17 +26,18 @@
     </div>
   </header>
 
-  <main class="px-6 todo-app main" x-data="Main">
+  <main class="px-6 todo-app main">
       <!-- Open the modal using ID.showModal() method -->
       <dialog x-ref="modal" id="my_modal_1" class="modal">
         <div class="modal-box">
-          <h3 class="text-lg font-bold">Hello!</h3>
-          <p class="py-4">Press ESC key or click the button below to close</p>
+          <h3 class="text-lg font-bold">待辦事項</h3>
+          <input x-model="todoText" type="text" class="mt-4 input w-full input-bordered">
           <div class="modal-action">
             <form method="dialog">
               <!-- if there is a button in form, it will close the modal -->
-              <button class="btn">Close</button>
+              <button class="btn">取消</button>
             </form>
+            <button @click.prevent="updateTodo" class="btn btn-error">更新</button>
           </div>
         </div>
       </dialog>
@@ -141,15 +142,16 @@
       </section>
     </template>
     <!-- TODO Section end -->
+  </main>
 
-    <section class="todo-list">
+    <section x-data class="todo-list">
       <ul class="items">
         <!-- item start -->
         <template x-for="todo in todos">
           <li class="completed">
             <div class="item-content">
               <label>
-                <input type="checkbox" />
+                <input @click="toggleTodo(todo.id)" type="checkbox" :checked="todo.completed_at" />
                 <p class="content" x-text="todo.content"></p>
               </label>
             </div>
@@ -164,7 +166,6 @@
         <!-- item end -->
       </ul>
     </section>
-  </main>
 
 
   <footer>
